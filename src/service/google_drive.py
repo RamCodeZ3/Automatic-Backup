@@ -7,9 +7,9 @@ from googleapiclient.http import MediaFileUpload
 class GoogleDrive:
     def __init__(self, credentials):
         self.credentials = credentials
-        self.service = self.create_service()
+        self.service = self._create_service()
 
-    def create_service(self):
+    def _create_service(self):
         credentials = service_account.Credentials.from_service_account_file(
             self.credentials,
             scopes=['https://www.googleapis.com/auth/drive']
