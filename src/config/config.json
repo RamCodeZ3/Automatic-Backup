@@ -1,6 +1,4 @@
 {
-    "backupType": "local",
-    "backupInterval": "monthly",
-    "backupPath": "path",
-    "firstTime": true
+    "first_time": true,
+    "backup_groups": []
 }

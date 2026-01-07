@@ -41,5 +41,3 @@ class Backup:
         finally:
             if os.path.exists(backup + ".zip"):
                 os.remove(backup + ".zip")
-        
-

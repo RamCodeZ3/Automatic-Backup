@@ -1,5 +1,6 @@
 import json
 import os
+from model.backup_model import BackupModel
 
 
 class ConfigService:
@@ -19,10 +20,8 @@ class ConfigService:
 
     def _default_config(self):
         return {
-            "backupType": "local",
-            "backupInterval": "monthly",
-            "backupPath": "path",
-            "firstTime": True
+            "firstTime": True,
+            "backup_groups": []
         }
 
     def get_key_value(self, key):
@@ -36,3 +35,7 @@ class ConfigService:
         os.makedirs(os.path.dirname(self.PATH), exist_ok=True)
         with open(self.PATH, "w", encoding="utf-8") as f:
             json.dump(self.config, f, indent=4)
+    
+    def add_backup(self, backup: BackupModel):
+        self.config["backup_groups"].append(backup.model_dump())
+        self.save()
