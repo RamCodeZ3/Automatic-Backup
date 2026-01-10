@@ -1,6 +1,6 @@
 import customtkinter
 import os
-from service.config_service import ConfigService
+from service.database_service import DatabaseService
 from PIL import Image
 
 # Paths
@@ -88,8 +88,8 @@ class ListBackupsFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
-        config = ConfigService()
-        backups = config.get_key_value("backup_groups")
+        db = DatabaseService()
+        backups = db.get_all_backups()
 
         self.columnconfigure(0, weight=1)
 

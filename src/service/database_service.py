@@ -1,5 +1,6 @@
 import sqlite3
 from pathlib import Path
+from model.backup_model import BackupModel
 
 
 class DatabaseService:
@@ -11,12 +12,15 @@ class DatabaseService:
         self.DB = db_dir / "database.sqlite3"
         self._create_tables()
 
-    def _create_tables(self):
-        with sqlite3.connect(self.DB) as connection:
-            connection.execute("PRAGMA foreign_keys = ON")
-            cursor = connection.cursor()
+    def _get_connection(self):
+        conn = sqlite3.connect(self.DB)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys = ON")
+        return conn
 
-            cursor.executescript("""
+    def _create_tables(self):
+        with self._get_connection() as connection:
+            connection.executescript("""
             CREATE TABLE IF NOT EXISTS backups (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
@@ -42,8 +46,114 @@ class DatabaseService:
             );
             """)
 
-            connection.commit()
-            print("Base de datos y tablas creadas correctamente")
+    def get_all_backups(self):
+        try:
+            with self._get_connection() as connection:
+                cursor = connection.cursor()
+                cursor.execute("SELECT * FROM backups")
+                return cursor.fetchall()
+        
+        except Exception as e:
+            raise ValueError(f"Hubo un error obteniendo los backups", e)
 
+    def get_backup_by_id(self, backup_id: int):
+        try:
+            with self._get_connection() as connection:
+                cursor = connection.cursor()
+                cursor.execute(
+                    "SELECT * FROM backups WHERE id = ?",
+                    (backup_id,)
+                )
+                return cursor.fetchone()
+        
+        except Exception as e:
+            raise ValueError(
+                f"Hubo un error obteniendo el backup {backup_id}", e
+            )
 
-db = DatabaseService()
+    def add_backup(self, backup: BackupModel):
+        try:
+            with self._get_connection() as connection:
+                cursor = connection.cursor()
+
+                cursor.execute("""
+                INSERT INTO backups (
+                    name,
+                    backup_path,
+                    destination_path,
+                    frequency,
+                    time,
+                    day_of_week,
+                    day_of_month,
+                    history_enabled
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    backup.name,
+                    backup.backup_path,
+                    backup.destination_path,
+                    backup.frequency,
+                    backup.time,
+                    backup.day_of_week,
+                    backup.day_of_month,
+                    int(backup.history_enabled)
+                ))
+
+                connection.commit()
+        
+        except Exception as e:
+            raise ValueError(f"Hubo un error creando el backup", e)
+    
+    def update_backup_by_id(self, backup: BackupModel):
+        try:
+            with self._get_connection() as connection:
+                cursor = connection.cursor()
+
+                cursor.execute("""
+                UPDATE backups
+                SET
+                    name = ?,
+                    backup_path = ?,
+                    destination_path = ?,
+                    frequency = ?,
+                    time = ?,
+                    day_of_week = ?,
+                    day_of_month = ?,
+                    history_enabled = ?
+                WHERE id = ?
+                """, (
+                    backup.name,
+                    backup.backup_path,
+                    backup.destination_path,
+                    backup.frequency,
+                    backup.time,
+                    backup.day_of_week,
+                    backup.day_of_month,
+                    int(backup.history_enabled),
+                    backup.id
+                ))
+
+                if cursor.rowcount == 0:
+                    raise ValueError(f"No existe un backup con id {backup.id}")
+                
+                connection.commit()
+        
+        except Exception as e:
+            raise ValueError(f"Hubo un error actualizando el backup", e)
+
+    def delete_backup_by_id(self, backup_id: int):
+        try:
+            with self._get_connection() as connection:
+                cursor = connection.cursor()
+                cursor.execute(
+                    "DELETE FROM backups WHERE id = ?", 
+                    (backup_id)
+                )
+
+                if cursor.rowcount == 0:
+                    raise ValueError(f"No existe un backup con id {backup_id}")
+
+                connection.commit()
+        
+        except Exception as e:
+            raise ValueError(f"Hubo un error eliminando el backup", e)
+
