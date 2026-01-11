@@ -12,3 +12,5 @@ class BackupModel(BaseModel):
     day_of_week: Optional[str] = None
     day_of_month: Optional[str] = None
     history_enabled: bool
+    created_at: Optional[str] = None
+    

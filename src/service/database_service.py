@@ -1,6 +1,7 @@
 import sqlite3
 from pathlib import Path
 from model.backup_model import BackupModel
+from model.history_backup_model import HistoryBackupModel
 
 
 class DatabaseService:
@@ -156,4 +157,78 @@ class DatabaseService:
         
         except Exception as e:
             raise ValueError(f"Hubo un error eliminando el backup", e)
+        
+    # methods for history_backup
+    def get_all_history_backups(self):
+        try:
+            with self._get_connection() as connection:
+                cursor = connection.cursor()
+                cursor.execute("""
+                    SELECT * FROM history_backups
+                    ORDER BY created_at DESC
+                """)
+                return cursor.fetchall()
 
+        except Exception as e:
+            raise ValueError(
+                "Hubo un error obteniendo el historial de backups", e
+            )
+
+    def get_history_by_backup_id(self, backup_id: int):
+        try:
+            with self._get_connection() as connection:
+                cursor = connection.cursor()
+                cursor.execute("""
+                    SELECT * FROM history_backups
+                    WHERE backup_id = ?
+                    ORDER BY created_at DESC
+                """, (backup_id,))
+                return cursor.fetchall()
+
+        except Exception as e:
+            raise ValueError(
+                f"Hubo un error obteniendo el historial del backup {backup_id}", e
+            )
+
+    def add_history_backup(self, history: HistoryBackupModel):
+        try:
+            with self._get_connection() as connection:
+                cursor = connection.cursor()
+
+                cursor.execute("""
+                    INSERT INTO history_backups (
+                        backup_id,
+                        backup_name
+                    ) VALUES (?, ?)
+                """, (
+                    history.backup_id,
+                    history.backup_name
+                ))
+
+                connection.commit()
+
+        except Exception as e:
+            raise ValueError(
+                "Hubo un error creando el historial del backup", e
+            )
+
+    def delete_history_by_id(self, history_id: int):
+        try:
+            with self._get_connection() as connection:
+                cursor = connection.cursor()
+                cursor.execute(
+                    "DELETE FROM history_backups WHERE id = ?",
+                    (history_id,)
+                )
+
+                if cursor.rowcount == 0:
+                    raise ValueError(
+                        f"No existe un historial con id {history_id}"
+                    )
+
+                connection.commit()
+
+        except Exception as e:
+            raise ValueError(
+                "Hubo un error eliminando el historial", e
+            )
