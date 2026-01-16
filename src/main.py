@@ -1,6 +1,5 @@
 from utils.backup import Backup
 from service.database_service import DatabaseService
-from model.backup_model import BackupModel
 from ui.app_ui import App
 
 

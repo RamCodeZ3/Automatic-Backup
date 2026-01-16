@@ -8,6 +8,24 @@ IMAGE_BACKUP = os.path.abspath("image/backup-svgrepo-com.png")
 IMAGE_TRASH = os.path.abspath("image/trash-blank-alt-svgrepo-com.png")
 
 
+class DashBoard(customtkinter.CTkFrame):
+        def __init__(self, master, **kwargs):
+            super().__init__(master, **kwargs)
+            # Grid config
+            self.columnconfigure(0, weight=1)
+            self.rowconfigure(0, weight=0)
+
+            # Backups
+            self.backups_frame = ListBackupsFrame(self)
+            self.backups_frame.grid(
+                row=1,
+                column=0,
+                padx=20,
+                pady=20,
+                sticky="nsew",
+            )
+
+
 class BackupFrame(customtkinter.CTkFrame):
     def __init__(self, master, name: str, path: str,  **kwargs):
         super().__init__(master, **kwargs)
@@ -88,8 +106,8 @@ class ListBackupsFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
-        db = DatabaseService()
-        backups = db.get_all_backups()
+        service = DatabaseService()
+        backups = service.get_all_backups()
 
         self.columnconfigure(0, weight=1)
 
@@ -106,51 +124,4 @@ class ListBackupsFrame(customtkinter.CTkFrame):
                 sticky="ew",
                 padx=10,
                 pady=5
-            )
-
-
-
-class HeaderFrame(customtkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
-        super().__init__(master, **kwargs)
-
-        self.columnconfigure(0, weight=1)
-
-        self.create_backup_btn = customtkinter.CTkButton(
-            self,
-            text="Crear copia de seguridad"
-        )
-        self.create_backup_btn.grid(
-            row=0,
-            column=0,
-            padx=20,
-            pady=15,
-            sticky="e"
-        )
-
-
-class DashBoard(customtkinter.CTkFrame):
-        def __init__(self, master, **kwargs):
-            super().__init__(master, **kwargs)
-        # Grid config
-            self.columnconfigure(0, weight=1)
-            self.rowconfigure(0, weight=0)
-            self.rowconfigure(1, weight=1)
-
-            # Header
-            self.header_frame = HeaderFrame(self)
-            self.header_frame.grid(
-                row=0,
-                column=0,
-                sticky="ew"
-            )
-
-            # Backups
-            self.backups_frame = ListBackupsFrame(self)
-            self.backups_frame.grid(
-                row=1,
-                column=0,
-                padx=20,
-                pady=20,
-                sticky="nsew",
             )
