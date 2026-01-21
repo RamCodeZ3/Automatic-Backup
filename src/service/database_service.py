@@ -19,6 +19,7 @@ class DatabaseService:
         conn.execute("PRAGMA foreign_keys = ON")
         return conn
 
+
     def _create_tables(self):
         with self._get_connection() as connection:
             connection.executescript("""
@@ -51,9 +52,9 @@ class DatabaseService:
         try:
             with self._get_connection() as connection:
                 cursor = connection.cursor()
-                cursor.execute("SELECT * FROM backups")
-                return cursor.fetchall()
-        
+                rows = cursor.execute("SELECT * FROM backups").fetchall()
+                return [dict(row) for row in rows]
+
         except Exception as e:
             raise ValueError(f"Hubo un error obteniendo los backups", e)
 
@@ -147,7 +148,7 @@ class DatabaseService:
                 cursor = connection.cursor()
                 cursor.execute(
                     "DELETE FROM backups WHERE id = ?", 
-                    (backup_id)
+                    (backup_id,)
                 )
 
                 if cursor.rowcount == 0:
